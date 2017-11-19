@@ -29,7 +29,8 @@ public class A3Basic extends JPanel {
         add(playView, BorderLayout.CENTER);
 
         //notify observers
-        model.notifyObservers();
+        model.setChangedAndNotify();
+
 
         // for getting key events into PlayView
         playView.requestFocusInWindow();

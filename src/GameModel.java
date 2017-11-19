@@ -28,6 +28,10 @@ public class GameModel extends Observable {
         landPad = new Rectangle2D.Double(padX,padY,padWidth,padHeight);
         centerX = padWidth/2 +330;
         centerY = padHeight/2+100;
+        exactCenterX=centerX;
+        exactCenterY=centerY;
+        lastCenterX=centerX;
+        lastCenterY=centerY;
 
         //Terrain initialiazation
         backX = new int[4];
@@ -43,10 +47,12 @@ public class GameModel extends Observable {
         Random rand = new Random();
         xpoints= new int[22];
         ypoints= new int[22];
+        exactYpoints=new int[21];
         xpoints[0]=0;
         xpoints[21]=width;
         ypoints[0]=height;
         ypoints[21]=height;
+        exactYpoints[0]=-1;
 
         int interval = width/19;
 
@@ -56,6 +62,7 @@ public class GameModel extends Observable {
                 xpoints[20]=width;
             }
             ypoints[i]=rand.nextInt(height/2)+height/2;
+            exactYpoints[i]=ypoints[i];
         }
 
         terrain = new Polygon(xpoints,ypoints,22);
@@ -86,29 +93,62 @@ public class GameModel extends Observable {
 
     // Landing Pad
     public Rectangle2D.Double landPad;
+    public  boolean padClick=false;
     int padX,padY;
     int centerX,centerY;
     int padWidth;
     int padHeight;
 
-    void moveLandPad(int x, int y){
-        System.out.println("Model: set value to " + x + " " + y);
+    int lastCenterX;
+    int lastCenterY;
+    //center x y for redo undo
+    public int exactCenterX;
+    public int exactCenterY;
 
+    int getCenterX(){
+        return centerX;
+    }
+    int getCenterY(){
+        return centerY;
+    }
+
+    void setLastCenterX(int x){
+        lastCenterX = x;
+    }
+    void setLastCenterY(int y){
+        lastCenterY = y;
+    }
+
+    //normal move landing pad
+    void dragLandingPad(int x, int y){
+        int deltaX = x-centerX;
+        int deltaY = y-centerY;
+        landPad.x=landPad.x+deltaX;
+        landPad.y=landPad.y+deltaY;
+        centerX=x;
+        centerY=y;
+        setChangedAndNotify();
+    }
+
+    void dropLandingPad(int x,int y){
+        System.out.println("Model: drop pad to " + x + " " + y);
         // create undoable edit
         UndoableEdit undoableEdit = new AbstractUndoableEdit() {
 
             // capture variables for closure
-            final int oldX = centerX;
+            final int oldX = exactCenterX;
             final int newX = x;
-            final int oldY = centerY;
+            final int oldY = exactCenterY;
             final int newY = y;
-            
+
 
             // Method that is called when we must redo the undone action
             public void redo() throws CannotRedoException {
                 super.redo();
                 centerX = newX;
                 centerY = newY;
+                exactCenterX=newX;
+                exactCenterY=newY;
                 landPad.x=centerX-padWidth/2;
                 landPad.y=centerY-padHeight/2;
                 System.out.println("Model: redo value to " + centerX + " " + centerY);
@@ -119,6 +159,8 @@ public class GameModel extends Observable {
                 super.undo();
                 centerX = oldX;
                 centerY = oldY;
+                exactCenterX=oldX;
+                exactCenterY=oldY;
                 landPad.x=centerX-padWidth/2;
                 landPad.y=centerY-padHeight/2;
                 System.out.println("Model: undo value to " + centerX + " " + centerY);
@@ -129,14 +171,23 @@ public class GameModel extends Observable {
         // Add this undoable edit to the undo manager
         undoManager.addEdit(undoableEdit);
 
-        int deltaX = x-centerX;
-        int deltaY = y-centerY;
-        landPad.x=landPad.x+deltaX;
-        landPad.y=landPad.y+deltaY;
-        centerX=x;
-        centerY=y;
+        if(padClick){
+            landPad.x=x-landPad.width/2;
+            landPad.y=y-landPad.height/2;
+            centerX=x;
+            centerY=y;
+            exactCenterX=x;
+            exactCenterY=y;
+            padClick=false;
+        }else{
+            exactCenterX=centerX;
+            exactCenterY=centerY;
+        }
+
         setChangedAndNotify();
+
     }
+
 
     // mouseclick hit test
     // ship hit test
@@ -152,12 +203,57 @@ public class GameModel extends Observable {
     }
 
     // Terrain
-    private int peaks = 20;
+    int currentPeak = 0;
     public Polygon terrain;
     int[] xpoints, ypoints;
+    int[] exactYpoints;
 
     public Polygon getTerrain(){
         return terrain;
+    }
+
+    public void dragPeak(int y, int peakSelected){
+        terrain.ypoints[peakSelected]=y;
+        setChangedAndNotify();
+    }
+
+    public void dropPeak(int y, int peakSelected){
+        UndoableEdit undoableEdit = new AbstractUndoableEdit() {
+
+            // capture variables for closure
+
+            final int oldValue = exactYpoints[peakSelected];
+            final int newValue = y;
+
+
+            // Method that is called when we must redo the undone action
+            public void redo() throws CannotRedoException {
+                super.redo();
+                exactYpoints[peakSelected] = newValue;
+                terrain.ypoints[peakSelected] = newValue;
+
+                System.out.println("Model: redo peak to " + terrain.ypoints[peakSelected]);
+                setChanged();
+                notifyObservers();
+            }
+
+            public void undo() throws CannotUndoException {
+                super.undo();
+                exactYpoints[peakSelected] = oldValue;
+                terrain.ypoints[peakSelected] = oldValue;
+
+                System.out.println("Model: undo peak to " + terrain.ypoints[peakSelected]);
+                setChanged();
+                notifyObservers();
+            }
+        };
+
+        // Add this undoable edit to the undo manager
+        undoManager.addEdit(undoableEdit);
+        exactYpoints[peakSelected]=y;
+        terrain.ypoints[peakSelected]=y;
+        currentPeak=peakSelected;
+        setChangedAndNotify();
     }
     // draw 20 circles 15 pix rad
     //circle mouseclick hit test (distance <= 15)

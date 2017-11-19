@@ -6,13 +6,12 @@ import java.util.Observer;
 
 // the edit toolbar
 public class ToolBarView extends JPanel implements Observer {
-
+    GameModel model;
     JButton undo = new JButton("Undo");
     JButton redo = new JButton("Redo");
 
     public ToolBarView(GameModel model) {
-
-
+        this.model=model;
         setLayout(new FlowLayout(FlowLayout.LEFT));
 
         // prevent buttons from stealing focus
@@ -38,6 +37,17 @@ public class ToolBarView extends JPanel implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        if(!model.canUndo()){
+            undo.setEnabled(false);
+        }else {
+            undo.setEnabled(true);
+        }
 
+        if(!model.canRedo()){
+            redo.setEnabled(false);
+        }else {
+            redo.setEnabled(true);
+        }
+        repaint();
     }
 }
