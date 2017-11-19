@@ -14,6 +14,7 @@ public class PlayView extends JPanel implements Observer {
 
         // want the background to be black
         setBackground(Color.BLACK);
+        model.addObserver(this);
 
     }
 

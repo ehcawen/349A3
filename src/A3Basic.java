@@ -28,6 +28,9 @@ public class A3Basic extends JPanel {
         // main playable view will be resizable
         add(playView, BorderLayout.CENTER);
 
+        //notify observers
+        model.notifyObservers();
+
         // for getting key events into PlayView
         playView.requestFocusInWindow();
 

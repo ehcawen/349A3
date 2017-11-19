@@ -12,6 +12,7 @@ public class ToolBarView extends JPanel implements Observer {
 
     public ToolBarView(GameModel model) {
 
+
         setLayout(new FlowLayout(FlowLayout.LEFT));
 
         // prevent buttons from stealing focus
@@ -20,6 +21,7 @@ public class ToolBarView extends JPanel implements Observer {
 
         add(undo);
         add(redo);
+        model.addObserver(this);
     }
 
     @Override

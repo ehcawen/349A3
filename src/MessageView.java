@@ -25,6 +25,8 @@ public class MessageView extends JPanel implements Observer {
             c.setForeground(Color.WHITE);
             c.setPreferredSize(new Dimension(100, 20));
         }
+        model.addObserver(this);
+        model.setChangedAndNotify();
     }
 
 
