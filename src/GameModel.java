@@ -16,7 +16,7 @@ public class GameModel extends Observable {
         undoManager = new UndoManager();
 
         ship = new Ship(60, width/2, 50);
-        shipWeight =10;
+        shipWidth =10;
 
         worldBounds = new Rectangle2D.Double(0, 0, width, height);
 
@@ -89,7 +89,11 @@ public class GameModel extends Observable {
     // - - - - - - - - - - -
     //blue
     public Ship ship;
-    int shipWeight;
+    int shipWidth;
+    int shipPosX=350;
+    int shipPosY=50;
+
+
 
     // Landing Pad
     public Rectangle2D.Double landPad;

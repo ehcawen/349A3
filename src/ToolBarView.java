@@ -33,6 +33,7 @@ public class ToolBarView extends JPanel implements Observer {
         add(undo);
         add(redo);
         model.addObserver(this);
+        model.ship.addObserver(this);
     }
 
     @Override

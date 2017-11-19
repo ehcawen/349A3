@@ -9,9 +9,13 @@ public class MessageView extends JPanel implements Observer {
     JLabel fuel = new JLabel("fuel");
     JLabel speed = new JLabel("speed");
     JLabel message = new JLabel("message");
+    GameModel model;
+    Ship ship;
 
     public MessageView(GameModel model) {
 
+        this.model=model;
+        this.ship=model.ship;
         // want the background to be black
         setBackground(Color.BLACK);
 
@@ -26,12 +30,19 @@ public class MessageView extends JPanel implements Observer {
             c.setPreferredSize(new Dimension(100, 20));
         }
         model.addObserver(this);
+        model.ship.addObserver(this);
         model.setChangedAndNotify();
     }
 
 
     @Override
     public void update(Observable o, Object arg) {
+        if(ship.getFuel()<=10){
+            fuel.setForeground(Color.RED);
+        }else {
+            fuel.setForeground(Color.WHITE);
+        }
 
+        fuel.setText("fuel: "+ship.getFuel());
     }
 }

@@ -30,6 +30,7 @@ public class A3Basic extends JPanel {
 
         //notify observers
         model.setChangedAndNotify();
+        model.ship.setChangedAndNotify();
 
 
         // for getting key events into PlayView

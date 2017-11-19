@@ -130,6 +130,7 @@ public class EditView extends JPanel implements Observer {
         });
 
         model.addObserver(this);
+        model.ship.addObserver(this);
         repaint();
     }
 
