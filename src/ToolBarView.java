@@ -19,6 +19,18 @@ public class ToolBarView extends JPanel implements Observer {
         undo.setFocusable(false);
         redo.setFocusable(false);
 
+        undo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                model.undo();
+            }
+        });
+
+        redo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                model.redo();
+            }
+        });
+
         add(undo);
         add(redo);
         model.addObserver(this);

@@ -8,8 +8,12 @@ import javax.vecmath.*;
 import java.util.Random;
 
 public class GameModel extends Observable {
+    // Undo manager
+    private UndoManager undoManager;
 
     public GameModel(int fps, int width, int height, int peaks) {
+
+        undoManager = new UndoManager();
 
         ship = new Ship(60, width/2, 50);
         shipWeight =10;
@@ -52,7 +56,6 @@ public class GameModel extends Observable {
                 xpoints[20]=width;
             }
             ypoints[i]=rand.nextInt(height/2)+height/2;
-            System.out.println("x"+i+"= "+xpoints[i]);
         }
 
         terrain = new Polygon(xpoints,ypoints,22);
@@ -89,6 +92,43 @@ public class GameModel extends Observable {
     int padHeight;
 
     void moveLandPad(int x, int y){
+        System.out.println("Model: set value to " + x + " " + y);
+
+        // create undoable edit
+        UndoableEdit undoableEdit = new AbstractUndoableEdit() {
+
+            // capture variables for closure
+            final int oldX = centerX;
+            final int newX = x;
+            final int oldY = centerY;
+            final int newY = y;
+            
+
+            // Method that is called when we must redo the undone action
+            public void redo() throws CannotRedoException {
+                super.redo();
+                centerX = newX;
+                centerY = newY;
+                landPad.x=centerX-padWidth/2;
+                landPad.y=centerY-padHeight/2;
+                System.out.println("Model: redo value to " + centerX + " " + centerY);
+                setChangedAndNotify();
+            }
+
+            public void undo() throws CannotUndoException {
+                super.undo();
+                centerX = oldX;
+                centerY = oldY;
+                landPad.x=centerX-padWidth/2;
+                landPad.y=centerY-padHeight/2;
+                System.out.println("Model: undo value to " + centerX + " " + centerY);
+                setChangedAndNotify();
+            }
+        };
+
+        // Add this undoable edit to the undo manager
+        undoManager.addEdit(undoableEdit);
+
         int deltaX = x-centerX;
         int deltaY = y-centerY;
         landPad.x=landPad.x+deltaX;
@@ -123,6 +163,26 @@ public class GameModel extends Observable {
     //circle mouseclick hit test (distance <= 15)
     //terrain hit test
 
+    // undo and redo methods
+    // - - - - - - - - - - - - - -
+
+    public void undo() {
+        if (canUndo())
+            undoManager.undo();
+    }
+
+    public void redo() {
+        if (canRedo())
+            undoManager.redo();
+    }
+
+    public boolean canUndo() {
+        return undoManager.canUndo();
+    }
+
+    public boolean canRedo() {
+        return undoManager.canRedo();
+    }
 
     // Observerable
     // - - - - - - - - - - -
