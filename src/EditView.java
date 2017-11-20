@@ -16,7 +16,6 @@ public class EditView extends JPanel implements Observer {
     int lastCenterX;
     int lastCenterY;
 
-    boolean dragging = false;
     public EditView(GameModel model) {
         this.model = model;
         lastX=0;
@@ -32,6 +31,8 @@ public class EditView extends JPanel implements Observer {
                 if(e.getClickCount()==2){
                     double currentPosX= e.getX();
                     double currentPosY = e.getY();
+
+                    //check world bounds
                     if(currentPosX+model.landPad.width/2<=model.worldBounds.width
                             && currentPosX-model.landPad.width/2>=0
                             && currentPosY+model.landPad.height/2<=model.worldBounds.height
@@ -59,6 +60,7 @@ public class EditView extends JPanel implements Observer {
                 if(model.landPad.contains(e.getX(),e.getY())){
                     landPadSelected=true;
                 }else{
+                    //hit test for peaks
                     for(int i =1;i<21;i++){
                         Point2D peak = new Point2D.Double(model.terrain.xpoints[i],model.terrain.ypoints[i]);
                         if(pos.distance(peak)<=15){
@@ -76,15 +78,13 @@ public class EditView extends JPanel implements Observer {
                 //drag selected
                 int offsetX = e.getX()-lastX;
                 int offsetY = e.getY()-lastY;
-                if(landPadSelected){//drag landing pad
+                if(landPadSelected){
+                    //drag landing pad
                     model.dragLandingPad(model.getCenterX()+offsetX,model.getCenterY()+offsetY);
                 }else if(peakSelected!=-1){
-
+                    //drag peak
                     int y= model.terrain.ypoints[peakSelected];
-
-                        model.dragPeak(y+offsetY,peakSelected);
-
-
+                    model.dragPeak(y+offsetY,peakSelected);
                 }
                 lastX=e.getX();
                 lastY=e.getY();

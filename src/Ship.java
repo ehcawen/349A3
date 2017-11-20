@@ -8,8 +8,11 @@ import java.util.Observable;
 
 class Ship extends Observable {
 
+
     // FPS and initial position for ship to appear
     public Ship(int fps, int x, int y) {
+
+
 
         startPosition = new Point2d(x, y);
 
@@ -21,6 +24,7 @@ class Ship extends Observable {
 
         // the ship has it's own animation timer
         timer = new Timer((int)(1000/fps), new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent ae) {
                 update();
@@ -45,7 +49,20 @@ class Ship extends Observable {
         velocity  = new Vector2d(0, 0);
         fuel = 50;
         setPaused(true);
+        crashed=false;
+        landed=false;
         setChangedAndNotify();
+    }
+
+    boolean crashed=false;
+    boolean landed = false;
+
+    void setCrashed(){
+        crashed=true;
+    }
+
+    void setLanded(){
+        landed=true;
     }
 
     // stop the ship
@@ -108,26 +125,32 @@ class Ship extends Observable {
     // animation update, call once per "frame"
     public void update() {
 
-        // decay thrust with deadband
-        if (velocity.x > decay)
-            velocity.x -= decay;
-        else if (velocity.x < decay)
-            velocity.x += decay;
-        else
-            velocity.x = 0;
+        if(crashed||landed){
+            stop();
+        }else {
+            // decay thrust with deadband
+            if (velocity.x > decay)
+                velocity.x -= decay;
+            else if (velocity.x < decay)
+                velocity.x += decay;
+            else
+                velocity.x = 0;
 
-        if (velocity.y > decay)
-            velocity.y -= decay;
-        else if (velocity.y < decay)
-            velocity.y += decay;
-        else
-            velocity.y = 0;
+            if (velocity.y > decay)
+                velocity.y -= decay;
+            else if (velocity.y < decay)
+                velocity.y += decay;
+            else
+                velocity.y = 0;
 
-        // keep it falling
-        velocity.y += gravity;
+            // keep it falling
+            velocity.y += gravity;
 
-        // finally update the position
-        position.add(velocity);
+            // finally update the position
+            position.add(velocity);
+        }
+
+
     }
 
     // methods to control the ship
@@ -135,18 +158,22 @@ class Ship extends Observable {
     // convienience methods for cardinal thrust directions
     public void thrustUp() {
         thrustVector(new Vector2d(0, -thrust));
+
     }
 
     public void thrustDown() {
         thrustVector(new Vector2d(0, thrust));
+
     }
 
     public void thrustLeft() {
         thrustVector(new Vector2d(-thrust, 0));
+
     }
 
     public void thrustRight() {
         thrustVector(new Vector2d(thrust, 0));
+
     }
 
     // apply a vector of thrust
@@ -156,6 +183,8 @@ class Ship extends Observable {
             fuel = Math.max(fuel - 1, 0);
         }
     }
+
+
 
     // observable interface helper (often call these two together)
     public void setChangedAndNotify() {

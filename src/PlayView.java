@@ -38,7 +38,9 @@ public class PlayView extends JPanel implements Observer {
             public void keyPressed(KeyEvent e) {
 
                 if(e.getKeyCode()==KeyEvent.VK_SPACE){
-                    if(ship.isPaused()){
+                    if(ship.crashed||ship.landed){
+                        ship.reset(ship.startPosition);
+                    }else if(ship.isPaused()){
                         ship.setPaused(false);
                     }else {
                         ship.setPaused(true);
@@ -129,6 +131,26 @@ public class PlayView extends JPanel implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+        if(!ship.isPaused()){
+            Rectangle2D shape = new Rectangle2D.Double(ship.position.getX()-5,ship.position.getY()-5,10,10);
+            if(!model.worldBounds.contains(shape)){
+                ship.setCrashed();
+            }
+            if(model.terrain.intersects(shape)){
+                ship.setCrashed();
+            }
+
+            if(model.landPad.intersects(shape)){
+                if(ship.getSpeed()<=ship.getSafeLandingSpeed()){
+                    System.out.println("LANDED");
+                    ship.setLanded();
+                }else {
+                    ship.setCrashed();
+                }
+
+            }
+        }
+
         repaint();
     }
 }
